@@ -4,7 +4,27 @@ Please follow the instruction in [InfinyOn Cloud](https://www.fluvio.io/docs/get
 
 # Start MQTT Connector
 
-Start MQTT Connector that will connect to City of Helsinki's MQTT broker.
+Start an MQTT Connector to connect to the City of Helsinki's transportation data in real-time via their MQTT broker.
+
+The `mqtt-conn.yaml` yaml is defined as follows:
+
+```yaml
+
+version: 0.5.2
+name: helsinki-bus 
+type: mqtt-source
+topic: helsinki
+direction: source
+create-topic: true
+parameters:
+  mqtt_topic: "/hfp/v2/journey/ongoing/vp/+/+/+/#"
+  payload_output_type: json
+secrets:
+  MQTT_URL: mqtt://mqtt.hsl.fi
+  
+```
+
+Let's run it to start the connector:
 
 ```bash
 
@@ -12,33 +32,34 @@ fluvio cloud connector create --config mqtt-conn.yaml
 
 ```
 
-You should see Cloud dashboard with 1 Topic and Inbound Traffic metrics.
+Checkout your InfinyOn Cloud dashboard to see the topic and the inbound traffic metrics.
 
-You can watch real-time traffic by running:
+You can watch real-time traffic through the CLI by running:
 
 ```bash
 
 fluvio consume helsinki
+
 ```
 
 # Testing Transformation
 
-Before we send transform data to Postgres, let's test the transformation.  We will use consume command in the CLI to perform transformation in Cloud and send out to console.  The yaml file `jolt.yaml` contains the transformation specification.  Note that the transformation is done in the Cloud.
+Before we send data to Postgres, we'll perform a transformation.  We will use the `consume` command in the CLI to perform transformation. The CLI is connected to InfinyOn Cloud, and all transformations are performed in the Cloud before the results are sent to the CLI client. The yaml file `jolt.yaml` contains the transformation specification. 
 
 ## Testing Jolt Transformation
 
 ### Download Jolt Transformation from the Hub
 
-SmartModule Hub is a place to share SmartModules.  You can download the Jolt transformation from the Hub.  
+SmartModule Hub is a place to share SmartModules. You can download the Jolt transformation from the Hub. The are 2 ways to download a SmartModule through the CLI or InfinyOn Cloud.
 
-In order to download, goto Cloud UI
-* Click the Hub icon on the left
-* Find `jolt` transformation from list of the SmartModules
+Let's use InfinyOn Cloud to download SmartModule:
+* Click the Hub icon on the top/left menu bar
+* Find `jolt` transformation SmartModule
 * Click "Install" button
 
-This will download Jolt Transformation to your Cloud account.
+This operation downloads Jolt Transformation to your Cloud account.
 
-You can confirm that the transformation is downloaded by running:
+You can confirm that `jolt` SmartModule has been downloaded by running:
 
 ```bash
 
@@ -51,7 +72,7 @@ You can confirm that the transformation is downloaded by running:
 
  ### Running Jolt Transformation
 
-The Jolt transformat allow JSON to JSON transformation.  The transformation specification is in the `jolt.yaml` file.  The transformation specification is in the [Jolt](https://intercom.help/godigibee/en/articles/4044359-transformer-getting-to-know-jolt). 
+Jolt is a DSL language for JSON to JSON transformation.  We defined the transformation specification is in the `jolt.yaml` file.  The transformation specification is in the [Jolt](https://intercom.help/godigibee/en/articles/4044359-transformer-getting-to-know-jolt). 
 
 In the `jolt.yaml` file, you will see the following:
 
@@ -71,11 +92,13 @@ transforms:
                 route: "route"
                 spd: "speed"
                 tst: "tst"
+                
 ```
 
-This pick subset of JSON fields and rename them.  In this case, we only care about field 'lat', 'long', 'vehicle', 'route', 'speed', and 'tst'.  We also rename them to 'lat', 'long', 'vehicle', 'route', 'speed', and 'tst'.
+We pick subset of JSON fields in the original records and rename them.  In this case, we only care about latitude, logitude, vehicle, route, speed, and timestamp.  We also rename them to 'lat', 'long', 'vehicle', 'route', 'speed', and 'tst'.
 
 
+Let's run the transformation locally:
 
 ```bash
 
@@ -86,7 +109,7 @@ $ fluvio consume helsinki --transforms-file jolt.yaml
 
 ```
 
-This way, you can test the transformation before sending the data to downstream system.
+This way, you can test the transformation before sending the data to downstream systems.
 
 
 # Sending JSON data to Postgres
@@ -107,6 +130,7 @@ Follow instruction at https://www.pgcli.com/install to install Postgres CLI.
 ```bash
 
 $ pgcli <your-postgres-url>
+
 
 ```
 
@@ -137,10 +161,10 @@ SELECT 0
 
 ### Download SQL Transformation from the Hub
 
-Similar to Jolt transformation, we will download SQL transformation from the Hub.  
+Similar to Jolt, we need to download SQL SmartModule from the Hub. The `json-sql` SmartModule translates JSON records into SQL commands.
 
-* Click the Hub icon on the left
-* Find `json-sql` transformation from list of the SmartModules
+* Click the Hub icon on the top/left
+* Find `json-sql` transformation in the SmartModules list
 * Click "Install" button
 
 You should see two SmartModule transformations in your Cloud account.
@@ -158,6 +182,54 @@ fluvio smartmodule list
 ### Running Start SQL connector
 
 The `sql-conn.yaml` file contains connector configuration as well as transformation specification.  
+
+```yaml
+
+name: helsinki-speed
+type: sql-sink
+version: 0.1.1
+topic: helsinki
+parameters:
+ database-url: "postgres://user:password@db.postgreshost.example/dbname"
+ rust_log: "sql_sink=INFO,sqlx=WARN"
+transforms:
+  - uses: infinyon/jolt@0.1.0
+    with:
+      spec:
+        - operation: shift
+          spec:
+            payload:
+              VP:
+                lat: "lat"
+                long: "long"
+                veh: "vehicle"
+                route: "route"
+                spd: "speed"
+                tst: "tst"
+  - uses: infinyon/json-sql@0.1.0
+    with:
+      mapping:
+        table: "speed"
+        map-columns:
+          "lat":
+            json-key: "lat"
+            value:
+              type: "float"
+              default: "0"
+              required: true
+          "long":
+            json-key: "long"
+            value:
+              type: "float"
+              required: true
+          "vehicle":
+            json-key: "vehicle"
+            value:
+              type: "int"
+              required: true
+              
+```
+
 Please change `database-url` fiele to your Postgres URL.
 
 You can start SQL connector by running:
