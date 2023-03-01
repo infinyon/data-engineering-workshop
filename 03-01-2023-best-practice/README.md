@@ -230,7 +230,7 @@ transforms:
               
 ```
 
-Please change `database-url` fiele to your Postgres URL.
+Please change `database-url` field to your specific Postgres URL.
 
 You can start SQL connector by running:
 
