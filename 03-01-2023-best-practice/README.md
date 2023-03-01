@@ -2,6 +2,10 @@
 
 Please follow the instruction in [InfinyOn Cloud](https://www.fluvio.io/docs/get-started/cloud/) to set up your InfinyOn Cloud account.
 
+# City of Helsinki's Transportation Data
+
+Helisnki City provides real-time transportation data via MQTT broker.  The data is in JSON format.  The data is available at `mqtt://mqtt.hsl.fi`.  Please see [Helsinki City's MQTT documentation](https://digitransit.fi/en/developers/apis/4-realtime-api/vehicle-positions/) for more information.
+
 # Start MQTT Connector
 
 Start an MQTT Connector to connect to the City of Helsinki's transportation data in real-time via their MQTT broker.
