@@ -142,11 +142,16 @@ $ pgcli <your-postgres-url>
 
 In the PGCLI, create a table called `speed` with the following schema:
 
+First drop exiting table if it exists:
+
 ```sql
+drop table speed;
+```
 
-create table speed(lat float, long flo
- at, vehicle integer);
+Then create new table `speed`:
 
+```sql
+create table speed(lat float, long float, vehicle integer);
 ``` 
 
 You can confirm that the table is created by running:
@@ -280,11 +285,12 @@ select avg(lat) from speed by group by
 
 # Cleaning up
 
-This MQTT connector consume large amount of data which will consume your Cloud account credits.  You can delete the connector by running:
+This MQTT connector uses large amount of data which will consume your Cloud account credits rapidly.  
+You can clean up objects by running:
 
 ```bash
 
-$ fluvio cloud connector delete helsinki-speed
-$ fluvio cloud connector delete helsinki-bus
+$ ./cleanup.sh
+
 
 ```
