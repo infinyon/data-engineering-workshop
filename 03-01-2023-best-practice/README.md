@@ -18,7 +18,7 @@ You can watch real-time traffic by running:
 
 ```bash
 
-flvuio consume helsinki
+fluvio consume helsinki
 ```
 
 # Testing Transformation
