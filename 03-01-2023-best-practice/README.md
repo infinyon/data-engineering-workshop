@@ -79,7 +79,7 @@ This pick subset of JSON fields and rename them.  In this case, we only care abo
 
 ```bash
 
-$ fluvio consume helsinki --transform jolt
+$ fluvio consume helsinki --transforms-file jolt.yaml
 
 {"lat":60.553262,"long":24.969189,"route":"9967","speed":0.0,"tst":"2023-03-01T06:04:57.140Z","vehicle":240}
 .....
