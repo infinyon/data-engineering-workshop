@@ -1,11 +1,14 @@
-version: 0.5.2
-name: helsinki-bus 
-type: mqtt-source
-topic: helsinki
-direction: source
-create-topic: true
-parameters:
-  mqtt_topic: "/hfp/v2/journey/ongoing/vp/+/+/+/#"
+meta:
+  version: latest
+  name: helsinki-bus 
+  type: mqtt-source
+  topic: helsinki
+  create-topic: true
+mqtt:
+  url: "mqtt://mqtt.hsl.fi"
+  topic: "/hfp/v2/journey/ongoing/vp/+/+/+/#"
+  client_id: "fluvio-connector"
+  timeout:
+    secs: 30
+    nanos: 0
   payload_output_type: json
-secrets:
-  MQTT_URL: mqtt://mqtt.hsl.fi
