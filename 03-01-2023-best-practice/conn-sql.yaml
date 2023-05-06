@@ -1,11 +1,16 @@
-# sql-chain.yml
-name: helsinki-speed
-type: sql-sink
-version: 0.1.1
-topic: helsinki
-parameters:
- database-url: "postgres://user:password@db.postgreshost.example/dbname"
- rust_log: "sql_sink=INFO,sqlx=WARN"
+apiVersion: 0.1.0
+meta:
+  version: 0.2.0
+  name: helsinki-sql-connector
+  type: sql-sink
+  topic: helsinki
+  secrets:
+    - name: PG_USER
+    - name: PG_PASSWORD
+    - name: PG_HOST
+
+sql:
+  url: "postgresql://${{ secrets.PG_USER }}:${{ secrets.PG_PASSWORD }}@${{ secrets.PG_HOST }}/${{ secrets.PG_USER }}"
 transforms:
   - uses: infinyon/jolt@0.1.0
     with:

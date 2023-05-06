@@ -1,9 +1,9 @@
+apiVersion: 0.1.0
 meta:
-  version: latest
+  version: 0.2.0
   name: helsinki-bus 
   type: mqtt-source
   topic: helsinki
-  create-topic: true
 mqtt:
   url: "mqtt://mqtt.hsl.fi"
   topic: "/hfp/v2/journey/ongoing/vp/+/+/+/#"
