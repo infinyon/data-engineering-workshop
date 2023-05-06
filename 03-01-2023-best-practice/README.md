@@ -6,6 +6,16 @@ Please follow the instruction in [InfinyOn Cloud](https://www.fluvio.io/docs/get
 
 Helisnki City provides real-time transportation data via MQTT broker.  The data is in JSON format.  The data is available at `mqtt://mqtt.hsl.fi`.  Please see [Helsinki City's MQTT documentation](https://digitransit.fi/en/developers/apis/4-realtime-api/vehicle-positions/) for more information.
 
+
+# Set up topic
+
+Let's create a topic called `helsinki` in InfinyOn Cloud.  We will use this topic to collect MQTT data from Helsinki City.
+Use 2h of retention time for the topic to make sure that we fit into default topic volume quota.
+
+```bash
+ fluvio topic create helsinki --retention-time 2h
+```
+
 # Start MQTT Connector
 
 Start an MQTT Connector to connect to the City of Helsinki's transportation data in real-time via their MQTT broker.
@@ -14,17 +24,20 @@ The `mqtt-conn.yaml` yaml is defined as follows:
 
 ```yaml
 
-version: 0.5.2
-name: helsinki-bus 
-type: mqtt-source
-topic: helsinki
-direction: source
-create-topic: true
-parameters:
-  mqtt_topic: "/hfp/v2/journey/ongoing/vp/+/+/+/#"
+apiVersion: 0.1.0
+meta:
+  version: 0.2.0
+  name: helsinki-bus 
+  type: mqtt-source
+  topic: helsinki
+mqtt:
+  url: "mqtt://mqtt.hsl.fi"
+  topic: "/hfp/v2/journey/ongoing/vp/+/+/+/#"
+  client_id: "fluvio-connector"
+  timeout:
+    secs: 30
+    nanos: 0
   payload_output_type: json
-secrets:
-  MQTT_URL: mqtt://mqtt.hsl.fi
   
 ```
 
@@ -32,7 +45,7 @@ Let's run it to start the connector:
 
 ```bash
 
-fluvio cloud connector create --config mqtt-conn.yaml
+fluvio cloud connector create --config conn-mqtt.yaml 
 
 ```
 
@@ -125,7 +138,7 @@ Finally, we will send the transformed data to Postgres.  We will use combination
 
 Please follow the instruction in [ElephantSQL](https://www.elephantsql.com/) to set up your Postgres account.
 
-## Download Postgres CLI
+### Download Postgres CLI
 
 Follow instruction at https://www.pgcli.com/install to install Postgres CLI.
 
@@ -138,7 +151,7 @@ $ pgcli <your-postgres-url>
 
 ```
 
-## Create table
+### Create table
 
 In the PGCLI, create a table called `speed` with the following schema:
 
@@ -168,7 +181,7 @@ SELECT 0
 
 ```
 
-### Download SQL Transformation from the Hub
+## Download SQL Transformation from the Hub
 
 Similar to Jolt, we need to download SQL SmartModule from the Hub. The `json-sql` SmartModule translates JSON records into SQL commands.
 
@@ -188,19 +201,38 @@ fluvio smartmodule list
   infinyon/jolt@0.1.0      564.0 KB 
 ```
 
-### Running Start SQL connector
+## Running  SQL connector
 
-The `sql-conn.yaml` file contains connector configuration as well as transformation specification.  
+Now we are ready to run the SQL connector to send data to Postgres after transformation.
+
+### Setting secrets
+
+In order to connect to Postgres, we need to set up secrets.  We will use the `fluvio cloud secret` command to set up secrets.  The `sql-conn.yaml` file contains the secrets.  We need to set up the following secrets as part of the connector configuration:
+
+```bash
+fluvio cloud secret set PG_USER <your-postgres-user>
+fluvio cloud secret set PG_PASSWORD <your-postgres-password>
+fluvio cloud secret set PG_HOST <your-postgres-host>
+```
+
+### Setting up connector
+
+The `sql-conn.yaml` file contains connector configuration as well as transformation specification.  Note that we are using both Jolt and SQL transformation.  The Jolt transformation is used to transform raw JSON to a subset of JSON fields.  The SQL transformation is used to transform JSON to SQL commands.  In addition, we are using secrets defined in previous section connect to Postgres.
 
 ```yaml
 
-name: helsinki-speed
-type: sql-sink
-version: 0.1.1
-topic: helsinki
-parameters:
- database-url: "postgres://user:password@db.postgreshost.example/dbname"
- rust_log: "sql_sink=INFO,sqlx=WARN"
+apiVersion: 0.1.0
+meta:
+  version: 0.2.0
+  name: helsinki-sql-connector
+  type: sql-sink
+  topic: helsinki
+  secrets:
+    - name: PG_USER
+    - name: PG_PASSWORD
+    - name: PG_HOST
+sql:
+  url: "postgresql://${{ secrets.PG_USER }}:${{ secrets.PG_PASSWORD }}@${{ secrets.PG_HOST }}/${{ secrets.PG_USER }}"
 transforms:
   - uses: infinyon/jolt@0.1.0
     with:
