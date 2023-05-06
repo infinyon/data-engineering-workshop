@@ -27,7 +27,7 @@ The `mqtt-conn.yaml` yaml is defined as follows:
 apiVersion: 0.1.0
 meta:
   version: 0.2.0
-  name: helsinki-bus 
+  name: helsinki-mqtt 
   type: mqtt-source
   topic: helsinki
 mqtt:
@@ -224,7 +224,7 @@ The `sql-conn.yaml` file contains connector configuration as well as transformat
 apiVersion: 0.1.0
 meta:
   version: 0.2.0
-  name: helsinki-sql-connector
+  name: helsinki-sql
   type: sql-sink
   topic: helsinki
   secrets:

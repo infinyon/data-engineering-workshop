@@ -1,7 +1,7 @@
 apiVersion: 0.1.0
 meta:
   version: 0.2.0
-  name: helsinki-sql-connector
+  name: helsinki-sql
   type: sql-sink
   topic: helsinki
   secrets:
