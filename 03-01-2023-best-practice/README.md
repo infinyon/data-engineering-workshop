@@ -83,7 +83,7 @@ You can confirm that `jolt` SmartModule has been downloaded by running:
  $ fluvio smartmodule list
 
    SMARTMODULE          SIZE     
-  infinyon/jolt@0.1.0  564.0 KB 
+  infinyon/jolt@0.2.0  564.0 KB 
 
  ```
 
@@ -96,7 +96,7 @@ In the `jolt.yaml` file, you will see the following:
 ```yaml
 
 transforms:
-  - uses: infinyon/jolt@0.1.0
+  - uses: infinyon/jolt@0.2.0
     with:
       spec:
         - operation: shift
