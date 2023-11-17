@@ -83,7 +83,7 @@ You can confirm that `jolt` SmartModule has been downloaded by running:
  $ fluvio smartmodule list
 
    SMARTMODULE          SIZE     
-  infinyon/jolt@0.1.0  564.0 KB 
+  infinyon/jolt@0.2.0  612.7 KB 
 
  ```
 
@@ -96,7 +96,7 @@ In the `jolt.yaml` file, you will see the following:
 ```yaml
 
 transforms:
-  - uses: infinyon/jolt@0.1.0
+  - uses: infinyon/jolt@0.2.0
     with:
       spec:
         - operation: shift
@@ -198,7 +198,7 @@ You should see two SmartModule transformations in your Cloud account.
 fluvio smartmodule list
   SMARTMODULE              SIZE     
   infinyon/json-sql@0.1.0  556.7 KB 
-  infinyon/jolt@0.1.0      564.0 KB 
+  infinyon/jolt@0.2.0      612.7 KB 
 ```
 
 ## Running  SQL connector
@@ -234,7 +234,7 @@ meta:
 sql:
   url: "postgresql://${{ secrets.PG_USER }}:${{ secrets.PG_PASSWORD }}@${{ secrets.PG_HOST }}/${{ secrets.PG_USER }}"
 transforms:
-  - uses: infinyon/jolt@0.1.0
+  - uses: infinyon/jolt@0.2.0
     with:
       spec:
         - operation: shift
