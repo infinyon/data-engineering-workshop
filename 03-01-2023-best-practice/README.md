@@ -44,9 +44,7 @@ mqtt:
 Let's run it to start the connector:
 
 ```bash
-
-fluvio cloud connector create --config conn-mqtt.yaml 
-
+fluvio cloud connector create --config ./mqtt-conn.yaml
 ```
 
 Checkout your InfinyOn Cloud dashboard to see the topic and the inbound traffic metrics.
